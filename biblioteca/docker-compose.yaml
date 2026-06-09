@@ -6,11 +6,54 @@ services:
       MYSQL_DATABASE: biblioteca_db
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306" # mappa la porta del container alla stessa porta di codespace
+      - "3306:3306"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
 
-  # spring-backend:
+  app-dev:
+    image: biblioteca:test
+    container_name: biblioteca_dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mysql-db
+      DB_NAME: biblioteca_db
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "9090:8080"
+    networks:
+      - app-network
+    profiles:
+      - dev
+
+  app-prod:
+    image: biblioteca:test
+    container_name: biblioteca_prod
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql-db
+      DB_NAME: biblioteca_db
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "9091:8080"
+    volumes:
+      - ./logs:/var/log/app
+    networks:
+      - app-network
+    profiles:
+      - prod
 
 networks:
   app-network:
