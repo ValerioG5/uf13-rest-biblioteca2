@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import it.marconi.biblioteca.domain.APIResponse;
 import it.marconi.biblioteca.domain.AutoreDTO;
 import it.marconi.biblioteca.domain.LibroDTO;
-import it.marconi.biblioteca.exceptions.ResourceNotFoundException;
 import it.marconi.biblioteca.services.AutoreService;
 import it.marconi.biblioteca.services.LibroService;
 import jakarta.validation.Valid;
@@ -40,9 +39,7 @@ public class AutoreController {
     @GetMapping("/{id}")
     @Operation(summary = "Cerca un autore dato il suo ID")
     public APIResponse<AutoreDTO> getAutore(@PathVariable Integer id) {
-        AutoreDTO autore = autoreService.getById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Autore", id));
-
+        AutoreDTO autore = autoreService.getById(id);
         return APIResponse.ok(autore, "Autore trovato");
     }
 
@@ -63,12 +60,7 @@ public class AutoreController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Rimuove un autore dal database, e anche tutti i suoi libri")
     public APIResponse<String> deleteAutore(@PathVariable Integer id) {
-        boolean deleted = autoreService.deleteById(id);
-
-        if (!deleted) {
-            throw new ResourceNotFoundException("Autore", id);
-        }
-
+        autoreService.deleteById(id);
         return APIResponse.success("Autore eliminato correttamente");
     }
 }

@@ -1,7 +1,6 @@
 package it.marconi.biblioteca.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import it.marconi.biblioteca.domain.Autore;
 import it.marconi.biblioteca.domain.AutoreDTO;
 import it.marconi.biblioteca.domain.AutoreMapper;
+import it.marconi.biblioteca.exceptions.ResourceNotFoundException;
 import it.marconi.biblioteca.repositories.AutoreRepository;
 
 @Service
@@ -33,16 +33,16 @@ public class AutoreService {
         return autoreRepo.findAll().stream().map(autore -> mapper.toDto(autore)).toList();
     }
 
-    public Optional<AutoreDTO> getById(int id) {
-
-        return autoreRepo.findById(id).map(autore -> mapper.toDto(autore));
+    public AutoreDTO getById(int id) {
+        return autoreRepo.findById(id)
+            .map(autore -> mapper.toDto(autore))
+            .orElseThrow(() -> new ResourceNotFoundException("Autore", id));
     }
 
-    public boolean deleteById(int id) {
-        if (autoreRepo.existsById(id)) {
-            autoreRepo.deleteById(id);
-            return true;
+    public void deleteById(int id) {
+        if (!autoreRepo.existsById(id)) {
+            throw new ResourceNotFoundException("Autore", id);
         }
-        return false;
+        autoreRepo.deleteById(id);
     }
 }
