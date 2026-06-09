@@ -12,6 +12,7 @@ import it.marconi.biblioteca.domain.Autore;
 import it.marconi.biblioteca.domain.Libro;
 import it.marconi.biblioteca.domain.LibroDTO;
 import it.marconi.biblioteca.domain.LibroMapper;
+import it.marconi.biblioteca.exceptions.InvalidRequestException;
 import it.marconi.biblioteca.repositories.AutoreRepository;
 import it.marconi.biblioteca.repositories.LibroRepository;
 
@@ -51,27 +52,14 @@ public class LibroService {
         return libroRepo.findByAutoreId(autoreId).stream().map(mapper::toDto).toList();
     }
 
-    public Optional<LibroDTO> save(LibroDTO libro) {
-
-        Optional<Autore> autore = autoreRepo.findById(libro.autore());
-        
-        if (autore.isPresent()) {
-            Autore a = autore.get();
-            Libro entity = mapper.toEntity(libro, a);
-            entity = libroRepo.save(entity);
-            return Optional.of(mapper.toDto(entity));
-        }
-        else
-            return Optional.empty();
-
-        // cerco l'autore nel db da associare al libro
-        // Autore autore = autoreRepo.findById(libro.autore()).
-        //     orElseThrow(() -> new RuntimeException("Autore non trovato"));
-
-        // Libro entity = mapper.toEntity(libro, autore);
-        // entity = libroRepo.save(entity);
-        // return mapper.toDto(entity);
-    }
+    public LibroDTO save(LibroDTO libro) {
+    Autore autore = autoreRepo.findById(libro.autore())
+        .orElseThrow(() -> new InvalidRequestException("Autore con ID " + libro.autore() + " non trovato"));
+    
+    Libro entity = mapper.toEntity(libro, autore);
+    entity = libroRepo.save(entity);
+    return mapper.toDto(entity);
+}
 
     public boolean deleteByIsbn(String isbn) {
 
